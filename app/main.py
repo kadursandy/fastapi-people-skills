@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from mangum import Mangum
 
-from schemas import Person
+from app.schemas import Person
 
 app = FastAPI(docs_url="/")
 
