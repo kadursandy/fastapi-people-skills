@@ -1,5 +1,6 @@
 from pydantic import BaseModel #EmailStr
-from typing import List, Optional, Union, Literal
+from typing import List # Optional, Union, Literal
+from typing_extensions import Literal
 
 from pydantic.fields import Field
 
