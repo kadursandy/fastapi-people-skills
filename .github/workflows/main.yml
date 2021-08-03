@@ -37,19 +37,25 @@ jobs:
         if: steps.cache-venv.outputs.cache-hit != 'true'
 
 
-      # Install all the app dependencies
+       Install all the app dependencies
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
 
-      # Build the app and run tests
+       Build the app and run tests
       - name: Build and Run Test
         run: . venv/bin/activate && pytest
+#
+#      - name: Create Zipfile archive of Dependencies
+#        run: |
+#          cd ./venv/lib/python3.8/site-packages
+#          zip -r9 ../../../../app.zip .
 
-      - name: Create Zipfile archive of Dependencies
+      - name : pip install
         run: |
-          cd ./venv/lib/python3.8/site-packages
-          zip -r9 ../../../../app.zip .
+          pip3 install --target python -r requirements.txt
+          cd ./python
+          zip -r9 ../app.zip .
 
       - name: Add App to Zipfile
         run: zip -g app.zip -r ./app main.py
