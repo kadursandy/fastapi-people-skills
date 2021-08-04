@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python all python version
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
           architecture: x64
 
       - name: Install Python Virtual ENV
@@ -36,29 +36,33 @@ jobs:
           pip3 install -r requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
 
-
-      # Install all the app dependencies
+#       Install all the app dependencies
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
-
-      # Build the app and run tests
+#       Build the app and run tests
       - name: Build and Run Test
         run: . venv/bin/activate && pytest
+#
+#      - name: Create Zipfile archive of Dependencies
+#        run: |
+#          cd ./venv/lib/python3.8/site-packages
+#          zip -r9 ../../../../app.zip .
 
-      - name: Create Zipfile archive of Dependencies
+      - name : pip install
         run: |
-          cd ./venv/lib/python3.7/site-packages
-          zip -r9 ../../../../api.zip .
+          pip3 install --target python -r requirements.txt
+          cd ./python
+          zip -r9 ../app.zip .
 
       - name: Add App to Zipfile
-        run: cd ./app && zip -g ../api.zip -r .
+        run: zip -g app.zip -r ./app main.py
 
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
         with:
-          name: api
-          path: api.zip
+          name: app
+          path: app.zip
 
 
   continuous-deployment:
@@ -76,20 +80,20 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      - name: Download Lambda api.zip
+      - name: Download Lambda app.zip
         uses: actions/download-artifact@v2
         with:
-          name: api
+          name: app
 
       - name: Upload to S3
-        run: aws s3 cp api.zip s3://fastapi-people-skills/api.zip
+        run: aws s3 cp app.zip s3://fastapi-people-skills/app.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Deploy new Lambda
-        run: aws lambda update-function-code --function-name fastapi-people-skills-lambda --s3-bucket fastapi-people-skills --s3-key api.zip
+        run: aws lambda update-function-code --function-name fastapi-people-skills-lambda --s3-bucket fastapi-people-skills --s3-key app.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
